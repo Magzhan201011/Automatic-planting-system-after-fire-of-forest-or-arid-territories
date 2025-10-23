@@ -2,10 +2,6 @@ const int FwdPin_A = 25;
 const int BwdPin_A = 26;  
 const int FwdPin_B = 17;  
 const int BwdPin_B = 16;  
-const int FwdPin_C = 27;  
-const int BwdPin_C = 12; 
-const int FwdPin_D = 2;   
-const int BwdPin_D = 13;  
 
 const int TrigPin = 5;    
 const int EchoPin = 4;    
@@ -19,11 +15,6 @@ void setup() {
   pinMode(BwdPin_A, OUTPUT);
   pinMode(FwdPin_B, OUTPUT);
   pinMode(BwdPin_B, OUTPUT);
-  pinMode(FwdPin_C, OUTPUT);
-  pinMode(BwdPin_C, OUTPUT);
-  pinMode(FwdPin_D, OUTPUT);
-  pinMode(BwdPin_D, OUTPUT);
-  
   pinMode(TrigPin, OUTPUT);
   pinMode(EchoPin, INPUT);
 }
@@ -45,10 +36,6 @@ void moveForward() {
   analogWrite(BwdPin_A, MaxSpd);
   analogWrite(FwdPin_B, LowSpd);
   analogWrite(BwdPin_B, MaxSpd);
-  analogWrite(FwdPin_C, LowSpd);
-  analogWrite(BwdPin_C, MaxSpd);
-  analogWrite(FwdPin_D, MaxSpd);
-  analogWrite(BwdPin_D, LowSpd);
 }
 
 void moveBackward() {
@@ -56,10 +43,6 @@ void moveBackward() {
   analogWrite(BwdPin_A, LowSpd);
   analogWrite(FwdPin_B, MaxSpd);
   analogWrite(BwdPin_B, LowSpd);
-  analogWrite(FwdPin_C, MaxSpd);
-  analogWrite(BwdPin_C, LowSpd);
-  analogWrite(FwdPin_D, LowSpd);
-  analogWrite(BwdPin_D, MaxSpd);
 }
 
 void turnRight() {
@@ -67,10 +50,6 @@ void turnRight() {
   analogWrite(BwdPin_A, MaxSpd);
   analogWrite(FwdPin_B, LowSpd);
   analogWrite(BwdPin_B, MaxSpd);
-  analogWrite(FwdPin_C, MaxSpd);
-  analogWrite(BwdPin_C, LowSpd);
-  analogWrite(FwdPin_D, LowSpd);
-  analogWrite(BwdPin_D, MaxSpd);
 }
 
 void loop() {
@@ -80,7 +59,7 @@ void loop() {
     moveBackward();  
     delay(2000);
     turnRight();     
-    delay(1000);
+    delay(2000);
   } else {
     moveForward();   
   }
