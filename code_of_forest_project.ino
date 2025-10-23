@@ -1,14 +1,23 @@
-const int FwdPin_A = 25;  
-const int BwdPin_A = 26;  
-const int FwdPin_B = 17;  
-const int BwdPin_B = 16;  
+#include <ESP32Servo.h>
 
-const int TrigPin = 5;    
-const int EchoPin = 4;    
-const float DistanceThreshold = 20.0; 
+const int FwdPin_A = 26;
+const int BwdPin_A = 25;
+const int FwdPin_B = 16;
+const int BwdPin_B = 17;
 
-int MaxSpd = 255;
-int LowSpd = 0;
+const int TrigPin = 14;
+const int EchoPin = 27;
+
+const int ServoPin = 12;
+const int PumpPin = 13;
+
+const float DistanceThreshold = 20.0; // см
+const int MaxSpd = 255;
+const int LowSpd = 0;
+
+Servo seedServo;
+unsigned long lastObstacleTime = 0;
+bool seedActionDone = false;
 
 void setup() {
   pinMode(FwdPin_A, OUTPUT);
@@ -17,6 +26,13 @@ void setup() {
   pinMode(BwdPin_B, OUTPUT);
   pinMode(TrigPin, OUTPUT);
   pinMode(EchoPin, INPUT);
+  pinMode(PumpPin, OUTPUT);
+
+  seedServo.attach(ServoPin);
+  seedServo.write(0);
+
+  digitalWrite(PumpPin, LOW);
+  lastObstacleTime = millis();
 }
 
 float getDistance() {
@@ -25,44 +41,69 @@ float getDistance() {
   digitalWrite(TrigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(TrigPin, LOW);
-  
-  long duration = pulseIn(EchoPin, HIGH);
-  float distance = duration * 0.034 / 2;  
-  return distance;
+  long duration = pulseIn(EchoPin, HIGH, 30000);
+  if (duration == 0) return -1;
+  return duration * 0.034 / 2;
 }
 
 void moveForward() {
-  analogWrite(FwdPin_A, LowSpd);
-  analogWrite(BwdPin_A, MaxSpd);
-  analogWrite(FwdPin_B, LowSpd);
-  analogWrite(BwdPin_B, MaxSpd);
-}
-
-void moveBackward() {
   analogWrite(FwdPin_A, MaxSpd);
   analogWrite(BwdPin_A, LowSpd);
   analogWrite(FwdPin_B, MaxSpd);
   analogWrite(BwdPin_B, LowSpd);
 }
 
-void turnRight() {
+void moveBackward() {
   analogWrite(FwdPin_A, LowSpd);
   analogWrite(BwdPin_A, MaxSpd);
   analogWrite(FwdPin_B, LowSpd);
   analogWrite(BwdPin_B, MaxSpd);
 }
 
+void turnRight() {
+  analogWrite(FwdPin_A, MaxSpd);
+  analogWrite(BwdPin_A, LowSpd);
+  analogWrite(FwdPin_B, LowSpd);
+  analogWrite(BwdPin_B, MaxSpd);
+}
+
+void stopMoving() {
+  analogWrite(FwdPin_A, 0);
+  analogWrite(BwdPin_A, 0);
+  analogWrite(FwdPin_B, 0);
+  analogWrite(BwdPin_B, 0);
+}
+
+void dropSeedAndWater() {
+  stopMoving();
+  delay(1000);            
+  seedServo.write(45);     
+  delay(500);
+  seedServo.write(0);       
+  delay(300);
+  digitalWrite(PumpPin, HIGH);
+  delay(500);
+  digitalWrite(PumpPin, LOW);
+}
+
 void loop() {
   float distance = getDistance();
-  
-  if (distance < DistanceThreshold && distance > 0) {
-    moveBackward();  
+
+  if (distance > 0 && distance < DistanceThreshold) {
+    lastObstacleTime = millis();
+    seedActionDone = false;
+    moveBackward();
     delay(2000);
-    turnRight();     
+    turnRight();
     delay(2000);
   } else {
-    moveForward();   
+    moveForward();
   }
-  
-  delay(100);  
+  if (!seedActionDone && millis()-lastObstacleTime>5000) {
+    dropSeedAndWater();
+    seedActionDone=true; 
+    lastObstacleTime=millis();
+  }
+
+  delay(100);
 }
